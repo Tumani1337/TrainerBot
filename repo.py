@@ -186,3 +186,30 @@ class GoalRepo:
                 is_completed=False,
                 workout_type=workout_type
             )
+
+    async def get_user_goals(self, user_id: int, include_completed: bool = False) -> List[Goal]:
+        query = """
+            SELECT id, user_id, description, target_value, current_value, 
+                   target_date, is_completed, workout_type
+            FROM goals WHERE user_id = ?
+        """
+        params = [user_id]
+
+        if not include_completed:
+            query += " AND is_completed = 0"
+
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+                return [
+                    Goal(
+                        id=row[0],
+                        user_id=row[1],
+                        description=row[2],
+                        target_value=row[3],
+                        current_value=row[4],
+                        target_date=datetime.fromisoformat(row[5]),
+                        is_completed=bool(row[6]),
+                        workout_type=row[7]
+                    ) for row in rows
+                ]
