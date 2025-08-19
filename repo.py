@@ -166,3 +166,23 @@ class GoalRepo:
                 )
             """)
             await db.commit()
+
+    async def add_goal(self, user_id: int, description: str, target_value: float,
+                       target_date: datetime, workout_type: Optional[str] = None) -> Goal:
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute("""
+                INSERT INTO goals (user_id, description, target_value, current_value, 
+                                  target_date, is_completed, workout_type)
+                VALUES (?, ?, ?, 0, ?, 0, ?)
+            """, (user_id, description, target_value, target_date.isoformat(), workout_type))
+            await db.commit()
+            return Goal(
+                id=cursor.lastrowid,
+                user_id=user_id,
+                description=description,
+                target_value=target_value,
+                current_value=0,
+                target_date=target_date,
+                is_completed=False,
+                workout_type=workout_type
+            )
