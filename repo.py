@@ -145,3 +145,24 @@ class WorkoutRepo:
                         notes=row[7]
                     ) for row in rows
                 ]
+
+class GoalRepo:
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+
+    async def create_table(self):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS goals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    description TEXT,
+                    target_value REAL,
+                    current_value REAL,
+                    target_date TEXT,
+                    is_completed INTEGER,
+                    workout_type TEXT,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            """)
+            await db.commit()
