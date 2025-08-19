@@ -52,3 +52,10 @@ class UserRepo:
                         last_activity=datetime.fromisoformat(row[4])
                     )
                 return None
+
+    async def update_user_activity(self, telegram_id: int):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                UPDATE users SET last_activity = ? WHERE telegram_id = ?
+            """, (datetime.now().isoformat(), telegram_id))
+            await db.commit()
