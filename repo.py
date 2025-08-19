@@ -238,3 +238,18 @@ class ReminderRepo:
                 )
             """)
             await db.commit()
+
+    async def add_reminder(self, user_id: int, days_of_week: str, time: str) -> Reminder:
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute("""
+                INSERT INTO reminders (user_id, days_of_week, time, is_active)
+                VALUES (?, ?, ?, 1)
+            """, (user_id, days_of_week, time))
+            await db.commit()
+            return Reminder(
+                id=cursor.lastrowid,
+                user_id=user_id,
+                days_of_week=days_of_week,
+                time=time,
+                is_active=True
+            )
