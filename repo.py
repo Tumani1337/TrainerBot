@@ -270,3 +270,10 @@ class ReminderRepo:
                         is_active=bool(row[4])
                     ) for row in rows
                 ]
+
+    async def toggle_reminder(self, reminder_id: int, is_active: bool):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                UPDATE reminders SET is_active = ? WHERE id = ?
+            """, (int(is_active), reminder_id))
+            await db.commit()
