@@ -80,3 +80,25 @@ class WorkoutRepo:
                 )
             """)
             await db.commit()
+
+    async def add_workout(self, user_id: int, workout_type: str, date: datetime,
+                          duration: Optional[float] = None,
+                          distance: Optional[float] = None,
+                          calories: Optional[int] = None,
+                          notes: Optional[str] = None) -> Workout:
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute("""
+                INSERT INTO workouts (user_id, workout_type, date, duration, distance, calories, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (user_id, workout_type, date.isoformat(), duration, distance, calories, notes))
+            await db.commit()
+            return Workout(
+                id=cursor.lastrowid,
+                user_id=user_id,
+                workout_type=workout_type,
+                date=date,
+                duration=duration,
+                distance=distance,
+                calories=calories,
+                notes=notes
+            )
