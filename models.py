@@ -30,7 +30,7 @@ class Goal:
     current_value: float
     target_date: datetime
     is_completed: bool
-    workout_type: Optional[str] = None  
+    workout_type: Optional[str] = None
 
 @dataclass
 class Reminder:
