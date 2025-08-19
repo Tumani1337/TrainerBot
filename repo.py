@@ -35,4 +35,20 @@ class UserRepo:
                 registration_date=datetime.fromisoformat(registration_date),
                 last_activity=datetime.fromisoformat(registration_date)
             )
-        
+
+    async def get_user_by_telegram_id(self, telegram_id: int) -> Optional[User]:
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("""
+                SELECT id, telegram_id, name, registration_date, last_activity
+                FROM users WHERE telegram_id = ?
+            """, (telegram_id,)) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    return User(
+                        id=row[0],
+                        telegram_id=row[1],
+                        name=row[2],
+                        registration_date=datetime.fromisoformat(row[3]),
+                        last_activity=datetime.fromisoformat(row[4])
+                    )
+                return None
