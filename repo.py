@@ -253,3 +253,20 @@ class ReminderRepo:
                 time=time,
                 is_active=True
             )
+
+    async def get_user_reminders(self, user_id: int) -> List[Reminder]:
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("""
+                SELECT id, user_id, days_of_week, time, is_active
+                FROM reminders WHERE user_id = ?
+            """, (user_id,)) as cursor:
+                rows = await cursor.fetchall()
+                return [
+                    Reminder(
+                        id=row[0],
+                        user_id=row[1],
+                        days_of_week=row[2],
+                        time=row[3],
+                        is_active=bool(row[4])
+                    ) for row in rows
+                ]
