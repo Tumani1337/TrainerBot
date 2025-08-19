@@ -102,3 +102,46 @@ class WorkoutRepo:
                 calories=calories,
                 notes=notes
             )
+
+    async def get_workouts_by_user(self, user_id: int,
+                                   period: Optional[str] = None,
+                                   workout_type: Optional[str] = None) -> List[Workout]:
+        query = """
+            SELECT id, user_id, workout_type, date, duration, distance, calories, notes
+            FROM workouts WHERE user_id = ?
+        """
+        params = [user_id]
+
+        if workout_type:
+            query += " AND workout_type = ?"
+            params.append(workout_type)
+
+        if period:
+            date_filter = datetime.now()
+            if period == "день":
+                date_filter = date_filter.replace(hour=0, minute=0, second=0, microsecond=0)
+            elif period == "неделя":
+                date_filter = date_filter.replace(day=date_filter.day - 7)
+            elif period == "месяц":
+                date_filter = date_filter.replace(month=date_filter.month - 1)
+            elif period == "год":
+                date_filter = date_filter.replace(year=date_filter.year - 1)
+
+            query += " AND date >= ?"
+            params.append(date_filter.isoformat())
+
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+                return [
+                    Workout(
+                        id=row[0],
+                        user_id=row[1],
+                        workout_type=row[2],
+                        date=datetime.fromisoformat(row[3]),
+                        duration=row[4],
+                        distance=row[5],
+                        calories=row[6],
+                        notes=row[7]
+                    ) for row in rows
+                ]
