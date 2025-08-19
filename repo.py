@@ -213,3 +213,10 @@ class GoalRepo:
                         workout_type=row[7]
                     ) for row in rows
                 ]
+
+    async def update_goal_progress(self, goal_id: int, new_value: float):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                UPDATE goals SET current_value = ? WHERE id = ?
+            """, (new_value, goal_id))
+            await db.commit()
