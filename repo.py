@@ -59,3 +59,24 @@ class UserRepo:
                 UPDATE users SET last_activity = ? WHERE telegram_id = ?
             """, (datetime.now().isoformat(), telegram_id))
             await db.commit()
+
+class WorkoutRepo:
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+
+    async def create_table(self):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS workouts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    workout_type TEXT,
+                    date TEXT,
+                    duration REAL,
+                    distance REAL,
+                    calories INTEGER,
+                    notes TEXT,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            """)
+            await db.commit()
