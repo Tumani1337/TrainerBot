@@ -61,6 +61,35 @@ class WorkoutService:
                            workout_type: Optional[str] = None) -> List[Workout]:
         return await self.workout_repo.get_workouts_by_user(user_id, period, workout_type)
 
+    async def get_workout_statistics(self, user_id: int, period: str,
+                                     workout_type: Optional[str] = None) -> dict:
+        workouts = await self.get_workouts(user_id, period, workout_type)
+
+        if not workouts:
+            return {
+                "total_workouts": 0,
+                "total_distance": 0,
+                "total_duration": 0,
+                "total_calories": 0,
+                "avg_distance": 0,
+                "avg_duration": 0,
+                "avg_calories": 0
+            }
+
+        total_distance = sum(w.distance or 0 for w in workouts)
+        total_duration = sum(w.duration or 0 for w in workouts)
+        total_calories = sum(w.calories or 0 for w in workouts)
+
+        return {
+            "total_workouts": len(workouts),
+            "total_distance": total_distance,
+            "total_duration": total_duration,
+            "total_calories": total_calories,
+            "avg_distance": total_distance / len(workouts),
+            "avg_duration": total_duration / len(workouts),
+            "avg_calories": total_calories / len(workouts) if total_calories else 0
+        }
+
 
 
 
