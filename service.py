@@ -57,4 +57,10 @@ class WorkoutService:
                 new_value = goal.current_value + 1
                 await self.goal_repo.update_goal_progress(goal.id, new_value)
 
+    async def get_workouts(self, user_id: int, period: Optional[str] = None,
+                           workout_type: Optional[str] = None) -> List[Workout]:
+        return await self.workout_repo.get_workouts_by_user(user_id, period, workout_type)
+
+
+
 
