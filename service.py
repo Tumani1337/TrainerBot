@@ -109,3 +109,5 @@ class WorkoutService:
 
             return goals
 
+        async def get_completed_goals(self, user_id: int) -> List[Goal]:
+            return await self.goal_repo.get_user_goals(user_id, include_completed=True)
