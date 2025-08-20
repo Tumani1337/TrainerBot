@@ -90,24 +90,32 @@ class WorkoutService:
             "avg_calories": total_calories / len(workouts) if total_calories else 0
         }
 
-    class GoalService:
-        def __init__(self, goal_repo: GoalRepo):
-            self.goal_repo = goal_repo
+class GoalService:
+    def __init__(self, goal_repo: GoalRepo):
+        self.goal_repo = goal_repo
 
-        async def add_goal(self, user_id: int, description: str, target_value: float,
-                           target_date: datetime, workout_type: Optional[str] = None) -> Goal:
-            return await self.goal_repo.add_goal(
-                user_id, description, target_value, target_date, workout_type
-            )
+    async def add_goal(self, user_id: int, description: str, target_value: float,
+                       target_date: datetime, workout_type: Optional[str] = None) -> Goal:
+        return await self.goal_repo.add_goal(
+            user_id, description, target_value, target_date, workout_type
+        )
 
-        async def get_user_goals(self, user_id: int, include_completed: bool = False) -> List[Goal]:
-            goals = await self.goal_repo.get_user_goals(user_id, include_completed)
+    async def get_user_goals(self, user_id: int, include_completed: bool = False) -> List[Goal]:
+        goals = await self.goal_repo.get_user_goals(user_id, include_completed)
 
-            for goal in goals:
-                if not goal.is_completed and goal.current_value >= goal.target_value:
-                    goal.is_completed = True
+        for goal in goals:
+            if not goal.is_completed and goal.current_value >= goal.target_value:
+                goal.is_completed = True
 
-            return goals
+        return goals
 
-        async def get_completed_goals(self, user_id: int) -> List[Goal]:
-            return await self.goal_repo.get_user_goals(user_id, include_completed=True)
+    async def get_completed_goals(self, user_id: int) -> List[Goal]:
+        return await self.goal_repo.get_user_goals(user_id, include_completed=True)
+
+class ReminderService:
+    def __init__(self, reminder_repo: ReminderRepo):
+            self.reminder_repo = reminder_repo
+
+    async def add_reminder(self, user_id: int, days_of_week: List[int], time: str) -> Reminder:
+        days_str = ",".join(map(str, days_of_week))
+        return await self.reminder_repo.add_reminder(user_id, days_str, time)
