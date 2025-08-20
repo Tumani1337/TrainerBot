@@ -147,3 +147,19 @@ class ReminderService:
                 todays_reminders.append(reminder)
 
         return todays_reminders
+
+
+class StatsService:
+    def __init__(self, workout_repo: WorkoutRepo):
+        self.workout_repo = workout_repo
+
+    async def compare_periods(self, user_id: int, period: str) -> dict:
+        if period not in ["week", "month"]:
+            raise ValueError("Invalid period for comparison")
+
+        current_workouts = await self.workout_repo.get_workouts_by_user(
+            user_id, period
+        )
+        previous_workouts = await self.workout_repo.get_workouts_by_user(
+            user_id, f"previous_{period}"
+        )
