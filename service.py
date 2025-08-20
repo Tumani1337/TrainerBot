@@ -100,3 +100,12 @@ class WorkoutService:
                 user_id, description, target_value, target_date, workout_type
             )
 
+        async def get_user_goals(self, user_id: int, include_completed: bool = False) -> List[Goal]:
+            goals = await self.goal_repo.get_user_goals(user_id, include_completed)
+
+            for goal in goals:
+                if not goal.is_completed and goal.current_value >= goal.target_value:
+                    goal.is_completed = True
+
+            return goals
+
