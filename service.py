@@ -150,8 +150,9 @@ class ReminderService:
 
 
 class StatsService:
-    def __init__(self, workout_repo: WorkoutRepo):
+    def __init__(self, workout_repo: WorkoutRepo, reminder_repo: ReminderRepo):
         self.workout_repo = workout_repo
+        self.reminder_repo = reminder_repo
 
     async def compare_periods(self, user_id: int, period: str) -> dict:
         if period not in ["week", "month"]:
@@ -184,5 +185,27 @@ class StatsService:
                 "duration": current_stats["duration"] - previous_stats["duration"],
                 "calories": current_stats["calories"] - previous_stats["calories"]
             }
+        }
+
+    async def get_reminders_stats(self, user_id: int) -> dict:
+        reminders = await self.reminder_repo.get_user_reminders(user_id)
+        active = sum(1 for r in reminders if r.is_active)
+        inactive = len(reminders) - active
+
+        next_reminder = None
+        now = datetime.now().time()
+
+        for r in reminders:
+            if r.is_active:
+                reminder_time = datetime.strptime(r.time, "%H:%M").time()
+                if reminder_time > now:
+                    next_reminder = r
+                    break
+
+        return {
+            "total": len(reminders),
+            "active": active,
+            "inactive": inactive,
+            "next_reminder": next_reminder
         }
 
