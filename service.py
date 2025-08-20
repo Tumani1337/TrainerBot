@@ -119,3 +119,8 @@ class ReminderService:
     async def add_reminder(self, user_id: int, days_of_week: List[int], time: str) -> Reminder:
         days_str = ",".join(map(str, days_of_week))
         return await self.reminder_repo.add_reminder(user_id, days_str, time)
+
+    async def get_user_reminders(self, user_id: int) -> List[Reminder]:
+        return await self.reminder_repo.get_user_reminders(user_id)
+
+    
