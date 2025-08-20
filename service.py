@@ -125,3 +125,6 @@ class ReminderService:
 
     async def toggle_reminder(self, reminder_id: int, is_active: bool):
         await self.reminder_repo.toggle_reminder(reminder_id, is_active)
+
+    async def get_active_reminders(self) -> List[Reminder]:
+        return await self.reminder_repo.get_active_reminders()
