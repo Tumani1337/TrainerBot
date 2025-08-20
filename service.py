@@ -163,3 +163,26 @@ class StatsService:
         previous_workouts = await self.workout_repo.get_workouts_by_user(
             user_id, f"previous_{period}"
         )
+
+        def calculate_stats(workouts):
+            return {
+                "count": len(workouts),
+                "distance": sum(w.distance or 0 for w in workouts),
+                "duration": sum(w.duration or 0 for w in workouts),
+                "calories": sum(w.calories or 0 for w in workouts)
+            }
+
+        current_stats = calculate_stats(current_workouts)
+        previous_stats = calculate_stats(previous_workouts)
+
+        return {
+            "current": current_stats,
+            "previous": previous_stats,
+            "difference": {
+                "count": current_stats["count"] - previous_stats["count"],
+                "distance": current_stats["distance"] - previous_stats["distance"],
+                "duration": current_stats["duration"] - previous_stats["duration"],
+                "calories": current_stats["calories"] - previous_stats["calories"]
+            }
+        }
+
