@@ -128,3 +128,8 @@ class ReminderService:
 
     async def get_active_reminders(self) -> List[Reminder]:
         return await self.reminder_repo.get_active_reminders()
+
+    async def get_reminders_for_time(self, target_time: str) -> List[Reminder]:
+        # Получаем напоминания, которые должны сработать в указанное время
+        all_active = await self.get_active_reminders()
+        return [r for r in all_active if r.time == target_time]
