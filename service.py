@@ -13,3 +13,10 @@ class UserService:
         if existing_user:
             return existing_user
         return await self.user_repo.add_user(telegram_id, name)
+
+    async def get_user(self, telegram_id: int) -> Optional[User]:
+        return await self.user_repo.get_user_by_telegram_id(telegram_id)
+
+    async def update_user_activity(self, telegram_id: int):
+        await self.user_repo.update_user_activity(telegram_id)
+
