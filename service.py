@@ -90,6 +90,13 @@ class WorkoutService:
             "avg_calories": total_calories / len(workouts) if total_calories else 0
         }
 
+    class GoalService:
+        def __init__(self, goal_repo: GoalRepo):
+            self.goal_repo = goal_repo
 
-
+        async def add_goal(self, user_id: int, description: str, target_value: float,
+                           target_date: datetime, workout_type: Optional[str] = None) -> Goal:
+            return await self.goal_repo.add_goal(
+                user_id, description, target_value, target_date, workout_type
+            )
 
