@@ -133,3 +133,17 @@ class ReminderService:
         # Получаем напоминания, которые должны сработать в указанное время
         all_active = await self.get_active_reminders()
         return [r for r in all_active if r.time == target_time]
+
+    async def get_todays_reminders(self) -> List[Reminder]:
+        # Получаем напоминания, которые должны сработать сегодня
+        from datetime import datetime
+        today_weekday = str(datetime.now().weekday())  # 0-6 (пн-вс)
+        all_active = await self.get_active_reminders()
+
+        todays_reminders = []
+        for reminder in all_active:
+            days = reminder.days_of_week.split(',')
+            if today_weekday in days:
+                todays_reminders.append(reminder)
+
+        return todays_reminders
