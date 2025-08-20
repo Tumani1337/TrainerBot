@@ -277,3 +277,20 @@ class ReminderRepo:
                 UPDATE reminders SET is_active = ? WHERE id = ?
             """, (int(is_active), reminder_id))
             await db.commit()
+
+    async def get_active_reminders(self) -> List[Reminder]:
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("""
+                SELECT id, user_id, days_of_week, time, is_active
+                FROM reminders WHERE is_active = 1
+            """) as cursor:
+                rows = await cursor.fetchall()
+                return [
+                    Reminder(
+                        id=row[0],
+                        user_id=row[1],
+                        days_of_week=row[2],
+                        time=row[3],
+                        is_active=bool(row[4])
+                    ) for row in rows
+                ]
