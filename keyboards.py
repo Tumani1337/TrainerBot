@@ -47,3 +47,17 @@ def goals_management() -> InlineKeyboardMarkup:
         )
     )
     return builder.as_markup()
+
+def reminders_management() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        InlineKeyboardButton(
+            text="➕ Новое напоминание",
+            callback_data="new_reminder"
+        ),
+        InlineKeyboardButton(
+            text="📋 Мои напоминания",
+            callback_data="list_reminders"
+        )
+    )
+    return builder.as_markup()
