@@ -61,3 +61,11 @@ def reminders_management() -> InlineKeyboardMarkup:
         )
     )
     return builder.as_markup()
+
+def confirm_cancel() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    builder.row(
+        KeyboardButton(text="✅ Подтвердить"),
+        KeyboardButton(text="❌ Отменить")
+    )
+    return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)
