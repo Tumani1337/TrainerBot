@@ -24,4 +24,12 @@ def workout_types() -> ReplyKeyboardMarkup:
     builder.adjust(2)
     return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)
 
-
+def periods_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for period in STAT_PERIODS:
+        builder.add(InlineKeyboardButton(
+            text=period.capitalize(),
+            callback_data=f"period_{period}")
+        )
+    builder.adjust(2)
+    return builder.as_markup()
