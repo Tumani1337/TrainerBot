@@ -83,3 +83,12 @@ def days_of_week_keyboard() -> InlineKeyboardMarkup:
         ))
     builder.adjust(7)
     return builder.as_markup()
+
+def back_button() -> InlineKeyboardMarkup:
+    """Кнопка 'Назад'"""
+    builder = InlineKeyboardBuilder()
+    builder.add(InlineKeyboardButton(
+        text="🔙 Назад",
+        callback_data="back"
+    ))
+    return builder.as_markup()
