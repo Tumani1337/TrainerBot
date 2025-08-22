@@ -16,3 +16,12 @@ def main_menu() -> ReplyKeyboardMarkup:
         KeyboardButton(text="ℹ️ Помощь")
     )
     return builder.as_markup(resize_keyboard=True)
+
+def workout_types() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    for workout_type in WORKOUT_TYPES:
+        builder.add(KeyboardButton(text=workout_type))
+    builder.adjust(2)
+    return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+
