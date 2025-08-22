@@ -69,3 +69,17 @@ def confirm_cancel() -> ReplyKeyboardMarkup:
         KeyboardButton(text="❌ Отменить")
     )
     return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+def days_of_week_keyboard() -> InlineKeyboardMarkup:
+    days = [
+        ("Пн", "1"), ("Вт", "2"), ("Ср", "3"),
+        ("Чт", "4"), ("Пт", "5"), ("Сб", "6"), ("Вс", "7")
+    ]
+    builder = InlineKeyboardBuilder()
+    for day, num in days:
+        builder.add(InlineKeyboardButton(
+            text=day,
+            callback_data=f"reminder_day_{num}"
+        ))
+    builder.adjust(7)
+    return builder.as_markup()
