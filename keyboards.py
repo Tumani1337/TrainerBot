@@ -33,3 +33,17 @@ def periods_keyboard() -> InlineKeyboardMarkup:
         )
     builder.adjust(2)
     return builder.as_markup()
+
+def goals_management() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        InlineKeyboardButton(
+            text="➕ Новая цель",
+            callback_data="new_goal"
+        ),
+        InlineKeyboardButton(
+            text="📋 Мои цели",
+            callback_data="list_goals"
+        )
+    )
+    return builder.as_markup()
