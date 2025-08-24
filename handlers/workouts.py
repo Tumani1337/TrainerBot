@@ -88,3 +88,26 @@ async def workout_duration_entered(message: Message, state: FSMContext):
         "Введите дистанцию в км (или пропустите):",
         reply_markup=back_button()
     )
+
+
+@router.message(AddWorkout.entering_distance)
+async def workout_distance_entered(message: Message, state: FSMContext):
+    distance = message.text.strip()
+
+    if distance.lower() == "пропустить":
+        await state.update_data(distance=None)
+    else:
+        try:
+            distance = float(distance)
+            if distance <= 0:
+                raise ValueError
+            await state.update_data(distance=distance)
+        except ValueError:
+            await message.answer("Пожалуйста, введите число больше 0 (или 'пропустить')")
+            return
+
+    await state.set_state(AddWorkout.entering_calories)
+    await message.answer(
+        "Введите количество калорий (или пропустите):",
+        reply_markup=back_button()
+    )
