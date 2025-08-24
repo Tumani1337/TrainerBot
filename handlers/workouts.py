@@ -25,3 +25,12 @@ class AddWorkout(StatesGroup):
     entering_calories = State()
     entering_notes = State()
     confirmation = State()
+
+@router.message(F.text.in_(("➕ Добавить тренировку", "/add_workout")))
+@router.message(Command("add_workout"))
+async def add_workout_start(message: Message, state: FSMContext):
+    await state.set_state(AddWorkout.selecting_type)
+    await message.answer(
+        "Выберите тип тренировки:",
+        reply_markup=workout_types()
+    )
