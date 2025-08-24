@@ -44,3 +44,24 @@ async def workout_type_selected(message: Message, state: FSMContext):
         "Введите дату тренировки (ДД.ММ.ГГГГ или 'сегодня'):",
         reply_markup=back_button()
     )
+
+
+@router.message(AddWorkout.entering_date)
+async def workout_date_entered(message: Message, state: FSMContext):
+    date_str = message.text.strip().lower()
+
+    if date_str == "сегодня":
+        date = datetime.now()
+    else:
+        try:
+            date = datetime.strptime(date_str, "%d.%m.%Y")
+        except ValueError:
+            await message.answer("Неверный формат даты. Используйте ДД.ММ.ГГГГ или 'сегодня'")
+            return
+
+    await state.update_data(date=date)
+    await state.set_state(AddWorkout.entering_duration)
+    await message.answer(
+        "Введите продолжительность тренировки в минутах (или пропустите):",
+        reply_markup=back_button()
+    )
