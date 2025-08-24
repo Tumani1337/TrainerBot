@@ -231,3 +231,11 @@ async def period_selected(callback: CallbackQuery,
         reply_markup=back_button()
     )
     await callback.answer()
+
+@router.callback_query(F.data == "back")
+async def back_handler(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "Главное меню",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
