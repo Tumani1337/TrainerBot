@@ -9,7 +9,7 @@ from keyboards import (
     workout_types,
     periods_keyboard,
     confirm_cancel,
-    back_button
+    back_button, main_menu
 )
 from service import WorkoutService, UserService
 from models import Workout
@@ -131,7 +131,7 @@ async def workout_calories_entered(message: Message, state: FSMContext):
 
     await state.set_state(AddWorkout.entering_notes)
     await message.answer(
-        "Добавьте заметки к тренировке (или пропустите):",
+        "Добавьте коментарий к тренировке (или пропустите):",
         reply_markup=back_button()
     )
 
@@ -162,3 +162,40 @@ async def workout_notes_entered(message: Message, state: FSMContext):
         workout_info,
         reply_markup=confirm_cancel()
     )
+
+
+@router.message(AddWorkout.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
+async def workout_confirmation(message: Message, state: FSMContext,
+                               workout_service: WorkoutService,
+                               user_service: UserService):
+    if message.text == "❌ Отменить":
+        await state.clear()
+        await message.answer("Добавление тренировки отменено", reply_markup=main_menu())
+        return
+
+    data = await state.get_data()
+    user = await user_service.get_user(message.from_user.id)
+
+    try:
+        workout = await workout_service.add_workout(
+            user_id=user.id,
+            workout_type=data['workout_type'],
+            date=data['date'],
+            duration=data.get('duration'),
+            distance=data.get('distance'),
+            calories=data.get('calories'),
+            notes=data.get('notes'),
+            telegram_id=message.from_user.id
+        )
+
+        await message.answer(
+            "✅ Тренировка успешно добавлена!",
+            reply_markup=main_menu()
+        )
+    except Exception as e:
+        await message.answer(
+            f"Ошибка при добавлении тренировки: {e}",
+            reply_markup=main_menu()
+        )
+    finally:
+        await state.clear()
