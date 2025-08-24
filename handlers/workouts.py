@@ -14,3 +14,14 @@ from service import WorkoutService, UserService
 from models import Workout
 from datetime import datetime
 import re
+
+router = Router()
+
+class AddWorkout(StatesGroup):
+    selecting_type = State()
+    entering_date = State()
+    entering_duration = State()
+    entering_distance = State()
+    entering_calories = State()
+    entering_notes = State()
+    confirmation = State()
