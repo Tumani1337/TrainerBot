@@ -199,3 +199,35 @@ async def workout_confirmation(message: Message, state: FSMContext,
         )
     finally:
         await state.clear()
+
+
+@router.callback_query(F.data.startswith("period_"))
+async def period_selected(callback: CallbackQuery,
+                          workout_service: WorkoutService,
+                          user_service: UserService):
+    period = callback.data.split("_")[1]
+    user = await user_service.get_user(callback.from_user.id)
+
+    workouts = await workout_service.get_workouts(
+        user_id=user.id,
+        period=period
+    )
+
+    if not workouts:
+        await callback.message.edit_text(
+            f"У вас нет тренировок за этот период ({period})",
+            reply_markup=back_button()
+        )
+        return
+
+    workouts_text = "\n\n".join(
+        f"{i + 1}. {w.workout_type} - {w.date.strftime('%d.%m.%Y')}\n"
+        f"Длительность: {w.duration or '?'} мин\n"
+        f"Дистанция: {w.distance or '?'} км"
+        for i, w in enumerate(workouts))
+
+    await callback.message.edit_text(
+        f"Ваши тренировки ({period}):\n\n{workouts_text}",
+        reply_markup=back_button()
+    )
+    await callback.answer()
