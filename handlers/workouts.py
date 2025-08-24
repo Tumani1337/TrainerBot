@@ -134,3 +134,31 @@ async def workout_calories_entered(message: Message, state: FSMContext):
         "Добавьте заметки к тренировке (или пропустите):",
         reply_markup=back_button()
     )
+
+
+@router.message(AddWorkout.entering_notes)
+async def workout_notes_entered(message: Message, state: FSMContext):
+    notes = message.text.strip()
+    if notes.lower() == "пропустить":
+        notes = None
+
+    await state.update_data(notes=notes)
+    await state.set_state(AddWorkout.confirmation)
+
+    data = await state.get_data()
+
+    workout_info = (
+        "Проверьте данные тренировки:\n\n"
+        f"Тип: {data['workout_type']}\n"
+        f"Дата: {data['date'].strftime('%d.%m.%Y')}\n"
+        f"Длительность: {data.get('duration', 'не указано')} мин\n"
+        f"Дистанция: {data.get('distance', 'не указано')} км\n"
+        f"Калории: {data.get('calories', 'не указано')}\n"
+        f"Коментарий: {data.get('notes', 'не указано')}\n\n"
+        "Всё верно?"
+    )
+
+    await message.answer(
+        workout_info,
+        reply_markup=confirm_cancel()
+    )
