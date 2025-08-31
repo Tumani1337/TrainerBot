@@ -16,7 +16,7 @@ from keyboards import (
 from service import GoalService, UserService
 from models import Goal
 
-router = Router()
+goals_router = Router()
 
 class AddGoal(StatesGroup):
     entering_description = State()
@@ -25,15 +25,15 @@ class AddGoal(StatesGroup):
     selecting_period = State()
     confirmation = State()
 
-@router.message(F.text.in_(("🎯 Мои цели", "/set_goal", "/view_goals")))
-@router.message(Command("set_goal", "view_goals"))
+@goals_router.message(F.text.in_(("🎯 Мои цели", "/set_goal", "/view_goals")))
+@goals_router.message(Command("set_goal", "view_goals"))
 async def goals_menu(message: Message):
     await message.answer(
         "Управление целями:",
         reply_markup=goals_management()
     )
 
-@router.callback_query(F.data == "new_goal")
+@goals_router.callback_query(F.data == "new_goal")
 async def new_goal_start(callback: CallbackQuery, state: FSMContext):
     await state.set_state(AddGoal.entering_description)
     await callback.message.edit_text(
@@ -43,7 +43,7 @@ async def new_goal_start(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(F.data == "list_goals")
+@goals_router.callback_query(F.data == "list_goals")
 async def list_goals(callback: CallbackQuery, goal_service: GoalService, user_service: UserService):
     user = await user_service.get_user(callback.from_user.id)
     goals = await goal_service.get_user_goals(user.id, telegram_id=callback.from_user.id)
@@ -76,7 +76,7 @@ async def list_goals(callback: CallbackQuery, goal_service: GoalService, user_se
     await callback.answer()
 
 
-@router.message(AddGoal.entering_description)
+@goals_router.message(AddGoal.entering_description)
 async def goal_description_entered(message: Message, state: FSMContext):
     description = message.text.strip()
     if len(description) < 5:
@@ -91,7 +91,7 @@ async def goal_description_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddGoal.selecting_type)
+@goals_router.message(AddGoal.selecting_type)
 async def goal_type_selected(message: Message, state: FSMContext):
     workout_type = message.text.strip()
     if workout_type.lower() == "пропустить":
@@ -120,7 +120,7 @@ async def goal_type_selected(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddGoal.entering_target)
+@goals_router.message(AddGoal.entering_target)
 async def goal_target_entered(message: Message, state: FSMContext):
     try:
         target_value = float(message.text.strip())
@@ -143,7 +143,7 @@ async def goal_target_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddGoal.selecting_period)
+@goals_router.message(AddGoal.selecting_period)
 async def goal_period_selected(message: Message, state: FSMContext):
     period_choice = message.text.strip()
     today = datetime.now()
@@ -184,7 +184,7 @@ async def goal_period_selected(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddGoal.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
+@goals_router.message(AddGoal.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
 async def goal_confirmation(message: Message, state: FSMContext,
                             goal_service: GoalService, user_service: UserService):
     if message.text == "❌ Отменить":
@@ -217,7 +217,7 @@ async def goal_confirmation(message: Message, state: FSMContext,
         await state.clear()
 
 
-@router.message(Command("progress"))
+@goals_router.message(Command("progress"))
 async def view_progress(message: Message, goal_service: GoalService, user_service: UserService):
     user = await user_service.get_user(message.from_user.id)
     goals = await goal_service.get_user_goals(user.id, telegram_id=message.from_user.id)
@@ -247,7 +247,7 @@ async def view_progress(message: Message, goal_service: GoalService, user_servic
     await message.answer(progress_text)
 
 
-@router.callback_query(F.data == "back")
+@goals_router.callback_query(F.data == "back")
 async def back_to_goals_menu(callback: CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
     if current_state:

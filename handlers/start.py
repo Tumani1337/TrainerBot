@@ -4,10 +4,10 @@ from aiogram.types import Message
 from keyboards import main_menu
 from service import UserService
 
-router = Router()
+start_router = Router()
 
 
-@router.message(command.CommandStart())
+@start_router.message(command.CommandStart())
 async def cmd_start(message: Message, user_service: UserService):
     user = await user_service.register_user(
         telegram_id=message.from_user.id,

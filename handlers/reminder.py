@@ -15,22 +15,22 @@ from keyboards import (
 from service import ReminderService, UserService
 from models import Reminder
 
-router = Router()
+reminder_router = Router()
 
 class AddReminder(StatesGroup):
     selecting_days = State()
     entering_time = State()
     confirmation = State()
 
-@router.message(F.text.in_(("⏰ Напоминания", "/reminder")))
-@router.message(Command("reminder"))
+@reminder_router.message(F.text.in_(("⏰ Напоминания", "/reminder")))
+@reminder_router.message(Command("reminder"))
 async def reminders_menu(message: Message):
     await message.answer(
         "Управление напоминаниями:",
         reply_markup=reminders_management()
     )
 
-@router.callback_query(F.data == "new_reminder")
+@reminder_router.callback_query(F.data == "new_reminder")
 async def new_reminder_start(callback: CallbackQuery, state: FSMContext):
     await state.set_state(AddReminder.selecting_days)
     await callback.message.edit_text(
@@ -40,7 +40,7 @@ async def new_reminder_start(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(F.data == "list_reminders")
+@reminder_router.callback_query(F.data == "list_reminders")
 async def list_reminders(callback: CallbackQuery, reminder_service: ReminderService, user_service: UserService):
     user = await user_service.get_user(callback.from_user.id)
     reminders = await reminder_service.get_user_reminders(user.id)
@@ -75,7 +75,7 @@ async def list_reminders(callback: CallbackQuery, reminder_service: ReminderServ
     await callback.answer()
 
 
-@router.callback_query(AddReminder.selecting_days, F.data.startswith("reminder_day_"))
+@reminder_router.callback_query(AddReminder.selecting_days, F.data.startswith("reminder_day_"))
 async def reminder_days_selected(callback: CallbackQuery, state: FSMContext):
     selected_day = callback.data.split("_")[2]
 
@@ -132,7 +132,7 @@ async def reminder_days_selected(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(AddReminder.selecting_days, F.data == "reminder_days_done")
+@reminder_router.callback_query(AddReminder.selecting_days, F.data == "reminder_days_done")
 async def reminder_days_done(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     selected_days = data.get('selected_days', [])
@@ -149,7 +149,7 @@ async def reminder_days_done(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.message(AddReminder.entering_time)
+@reminder_router.message(AddReminder.entering_time)
 async def reminder_time_entered(message: Message, state: FSMContext):
     time_str = message.text.strip()
 
@@ -181,7 +181,7 @@ async def reminder_time_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddReminder.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
+@reminder_router.message(AddReminder.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
 async def reminder_confirmation(message: Message, state: FSMContext,
                                 reminder_service: ReminderService, user_service: UserService):
     if message.text == "❌ Отменить":
@@ -212,7 +212,7 @@ async def reminder_confirmation(message: Message, state: FSMContext,
         await state.clear()
 
 
-@router.message(Command("toggle_reminder"))
+@reminder_router.message(Command("toggle_reminder"))
 async def toggle_reminder(message: Message, reminder_service: ReminderService, user_service: UserService):
     try:
         reminder_id = int(message.text.split()[1])
@@ -239,7 +239,7 @@ async def toggle_reminder(message: Message, reminder_service: ReminderService, u
         await message.answer(f"Ошибка: {e}")
 
 
-@router.callback_query(F.data == "back_to_reminders")
+@reminder_router.callback_query(F.data == "back_to_reminders")
 async def back_to_reminders_menu(callback: CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
     if current_state:
@@ -251,7 +251,7 @@ async def back_to_reminders_menu(callback: CallbackQuery, state: FSMContext):
     )
     await callback.answer()
 
-@router.callback_query(F.data == "back")
+@reminder_router.callback_query(F.data == "back")
 async def back_to_main_menu(callback: CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
     if current_state:

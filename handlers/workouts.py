@@ -16,7 +16,7 @@ from models import Workout
 from datetime import datetime
 import re
 
-router = Router()
+workouts_router = Router()
 
 class AddWorkout(StatesGroup):
     selecting_type = State()
@@ -27,8 +27,8 @@ class AddWorkout(StatesGroup):
     entering_notes = State()
     confirmation = State()
 
-@router.message(F.text.in_(("➕ Добавить тренировку", "/add_workout")))
-@router.message(Command("add_workout"))
+@workouts_router.message(F.text.in_(("➕ Добавить тренировку", "/add_workout")))
+@workouts_router.message(Command("add_workout"))
 async def add_workout_start(message: Message, state: FSMContext):
     await state.set_state(AddWorkout.selecting_type)
     await message.answer(
@@ -36,7 +36,7 @@ async def add_workout_start(message: Message, state: FSMContext):
         reply_markup=workout_types()
     )
 
-@router.message(AddWorkout.selecting_type, F.text.in_(WORKOUT_TYPES))
+@workouts_router.message(AddWorkout.selecting_type, F.text.in_(WORKOUT_TYPES))
 async def workout_type_selected(message: Message, state: FSMContext):
     await state.update_data(workout_type=message.text)
     await state.set_state(AddWorkout.entering_date)
@@ -46,7 +46,7 @@ async def workout_type_selected(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddWorkout.entering_date)
+@workouts_router.message(AddWorkout.entering_date)
 async def workout_date_entered(message: Message, state: FSMContext):
     date_str = message.text.strip().lower()
 
@@ -67,7 +67,7 @@ async def workout_date_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddWorkout.entering_duration)
+@workouts_router.message(AddWorkout.entering_duration)
 async def workout_duration_entered(message: Message, state: FSMContext):
     duration = message.text.strip()
 
@@ -90,7 +90,7 @@ async def workout_duration_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddWorkout.entering_distance)
+@workouts_router.message(AddWorkout.entering_distance)
 async def workout_distance_entered(message: Message, state: FSMContext):
     distance = message.text.strip()
 
@@ -113,7 +113,7 @@ async def workout_distance_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddWorkout.entering_calories)
+@workouts_router.message(AddWorkout.entering_calories)
 async def workout_calories_entered(message: Message, state: FSMContext):
     calories = message.text.strip()
 
@@ -136,7 +136,7 @@ async def workout_calories_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddWorkout.entering_notes)
+@workouts_router.message(AddWorkout.entering_notes)
 async def workout_notes_entered(message: Message, state: FSMContext):
     notes = message.text.strip()
     if notes.lower() == "пропустить":
@@ -164,7 +164,7 @@ async def workout_notes_entered(message: Message, state: FSMContext):
     )
 
 
-@router.message(AddWorkout.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
+@workouts_router.message(AddWorkout.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
 async def workout_confirmation(message: Message, state: FSMContext,
                                workout_service: WorkoutService,
                                user_service: UserService):
@@ -201,7 +201,7 @@ async def workout_confirmation(message: Message, state: FSMContext,
         await state.clear()
 
 
-@router.callback_query(F.data.startswith("period_"))
+@workouts_router.callback_query(F.data.startswith("period_"))
 async def period_selected(callback: CallbackQuery,
                           workout_service: WorkoutService,
                           user_service: UserService):
@@ -232,7 +232,7 @@ async def period_selected(callback: CallbackQuery,
     )
     await callback.answer()
 
-@router.callback_query(F.data == "back")
+@workouts_router.callback_query(F.data == "back")
 async def back_handler(callback: CallbackQuery):
     await callback.message.edit_text(
         "Главное меню",
