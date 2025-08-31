@@ -182,3 +182,36 @@ async def goal_period_selected(message: Message, state: FSMContext):
         goal_info,
         reply_markup=confirm_cancel()
     )
+
+
+@router.message(AddGoal.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
+async def goal_confirmation(message: Message, state: FSMContext,
+                            goal_service: GoalService, user_service: UserService):
+    if message.text == "❌ Отменить":
+        await state.clear()
+        await message.answer("Создание цели отменено", reply_markup=main_menu())
+        return
+
+    data = await state.get_data()
+    user = await user_service.get_user(message.from_user.id)
+
+    try:
+        goal = await goal_service.add_goal(
+            user_id=user.id,
+            description=data['description'],
+            target_value=data['target_value'],
+            target_date=data['target_date'],
+            workout_type=data.get('workout_type')
+        )
+
+        await message.answer(
+            "✅ Цель успешно установлена! Вы получите уведомление при её достижении.",
+            reply_markup=main_menu()
+        )
+    except Exception as e:
+        await message.answer(
+            f"Ошибка при создании цели: {e}",
+            reply_markup=main_menu()
+        )
+    finally:
+        await state.clear()
