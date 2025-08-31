@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command, StateFilter
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from datetime import datetime
@@ -71,5 +71,64 @@ async def list_reminders(callback: CallbackQuery, reminder_service: ReminderServ
     await callback.message.edit_text(
         reminders_text,
         reply_markup=reminders_management()
+    )
+    await callback.answer()
+
+
+@router.callback_query(AddReminder.selecting_days, F.data.startswith("reminder_day_"))
+async def reminder_days_selected(callback: CallbackQuery, state: FSMContext):
+    selected_day = callback.data.split("_")[2]
+
+    data = await state.get_data()
+    selected_days = data.get('selected_days', [])
+
+    if selected_day in selected_days:
+        selected_days.remove(selected_day)
+    else:
+        selected_days.append(selected_day)
+
+    await state.update_data(selected_days=selected_days)
+
+    # Обновляем сообщение с текущим выбором
+    days_map = {"1": "Пн", "2": "Вт", "3": "Ср", "4": "Чт", "5": "Пт", "6": "Сб", "7": "Вс"}
+    selected_days_names = [days_map.get(day, day) for day in selected_days]
+
+    if selected_days:
+        text = f"Выбраны дни: {', '.join(selected_days_names)}\n\nНажмите '✅ Готово' когда закончите выбор"
+    else:
+        text = "Выберите дни недели для напоминаний:"
+
+    # Создаем обновленную клавиатуру
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    builder = InlineKeyboardBuilder()
+
+    days = [
+        ("Пн", "1"), ("Вт", "2"), ("Ср", "3"),
+        ("Чт", "4"), ("Пт", "5"), ("Сб", "6"), ("Вс", "7")
+    ]
+
+    for day, num in days:
+        emoji = "✅" if num in selected_days else "⚪"
+        builder.add(InlineKeyboardButton(
+            text=f"{emoji} {day}",
+            callback_data=f"reminder_day_{num}"
+        ))
+
+    builder.adjust(7)
+
+    if selected_days:
+        builder.row(InlineKeyboardButton(
+            text="✅ Готово",
+            callback_data="reminder_days_done"
+        ))
+
+    builder.row(InlineKeyboardButton(
+        text="🔙 Назад",
+        callback_data="back_to_reminders"
+    ))
+
+    await callback.message.edit_text(
+        text,
+        reply_markup=builder.as_markup()
     )
     await callback.answer()
