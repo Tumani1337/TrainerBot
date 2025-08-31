@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from datetime import datetime, timedelta
 
+from config import WORKOUT_TYPES
 from keyboards import (
     main_menu,
     goals_management,
@@ -87,4 +88,34 @@ async def goal_description_entered(message: Message, state: FSMContext):
     await message.answer(
         "Выберите тип активности для цели (или пропустите для общей цели):",
         reply_markup=workout_types()
+    )
+
+
+@router.message(AddGoal.selecting_type)
+async def goal_type_selected(message: Message, state: FSMContext):
+    workout_type = message.text.strip()
+    if workout_type.lower() == "пропустить":
+        workout_type = None
+    elif workout_type not in WORKOUT_TYPES:
+        await message.answer("Пожалуйста, выберите тип из предложенных вариантов")
+        return
+
+    await state.update_data(workout_type=workout_type)
+    await state.set_state(AddGoal.entering_target)
+
+    data = await state.get_data()
+    description = data['description']
+
+    # Автоматическое определение единиц измерения из описания
+    if any(word in description.lower() for word in ['км', 'километр', 'дистанц']):
+        unit = "км"
+    elif any(word in description.lower() for word in ['мин', 'время', 'длительн']):
+        unit = "минут"
+    else:
+        unit = "раз"
+
+    await state.update_data(unit=unit)
+    await message.answer(
+        f"Введите целевое значение (в {unit}):",
+        reply_markup=back_button()
     )
