@@ -215,3 +215,33 @@ async def goal_confirmation(message: Message, state: FSMContext,
         )
     finally:
         await state.clear()
+
+
+@router.message(Command("progress"))
+async def view_progress(message: Message, goal_service: GoalService, user_service: UserService):
+    user = await user_service.get_user(message.from_user.id)
+    goals = await goal_service.get_user_goals(user.id, telegram_id=message.from_user.id)
+
+    if not goals:
+        await message.answer("У вас пока нет активных целей")
+        return
+
+    progress_text = "Ваш прогресс:\n\n"
+    completed = 0
+
+    for goal in goals:
+        progress_percent = (goal.current_value / goal.target_value * 100) if goal.target_value > 0 else 0
+        if goal.is_completed:
+            completed += 1
+            progress_text += f"✅ {goal.description} - ВЫПОЛНЕНО!\n"
+        else:
+            progress_text += (
+                f"⏳ {goal.description}\n"
+                f"Прогресс: {goal.current_value:.1f}/{goal.target_value:.1f} "
+                f"({progress_percent:.0f}%)\n"
+            )
+        progress_text += f"Срок: {goal.target_date.strftime('%d.%m.%Y')}\n\n"
+
+    progress_text += f"Выполнено целей: {completed}/{len(goals)}"
+
+    await message.answer(progress_text)
