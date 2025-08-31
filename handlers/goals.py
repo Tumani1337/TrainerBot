@@ -73,3 +73,18 @@ async def list_goals(callback: CallbackQuery, goal_service: GoalService, user_se
         reply_markup=goals_management()
     )
     await callback.answer()
+
+
+@router.message(AddGoal.entering_description)
+async def goal_description_entered(message: Message, state: FSMContext):
+    description = message.text.strip()
+    if len(description) < 5:
+        await message.answer("Описание должно содержать минимум 5 символов")
+        return
+
+    await state.update_data(description=description)
+    await state.set_state(AddGoal.selecting_type)
+    await message.answer(
+        "Выберите тип активности для цели (или пропустите для общей цели):",
+        reply_markup=workout_types()
+    )
