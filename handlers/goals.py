@@ -31,3 +31,12 @@ async def goals_menu(message: Message):
         "Управление целями:",
         reply_markup=goals_management()
     )
+
+@router.callback_query(F.data == "new_goal")
+async def new_goal_start(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(AddGoal.entering_description)
+    await callback.message.edit_text(
+        "Введите описание цели (например: 'Пробежать 50 км'):",
+        reply_markup=back_button()
+    )
+    await callback.answer()
