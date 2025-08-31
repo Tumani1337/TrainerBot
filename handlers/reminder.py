@@ -29,3 +29,12 @@ async def reminders_menu(message: Message):
         "Управление напоминаниями:",
         reply_markup=reminders_management()
     )
+
+@router.callback_query(F.data == "new_reminder")
+async def new_reminder_start(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(AddReminder.selecting_days)
+    await callback.message.edit_text(
+        "Выберите дни недели для напоминаний:",
+        reply_markup=days_of_week_keyboard()
+    )
+    await callback.answer()
