@@ -89,7 +89,6 @@ async def reminder_days_selected(callback: CallbackQuery, state: FSMContext):
 
     await state.update_data(selected_days=selected_days)
 
-    # Обновляем сообщение с текущим выбором
     days_map = {"1": "Пн", "2": "Вт", "3": "Ср", "4": "Чт", "5": "Пт", "6": "Сб", "7": "Вс"}
     selected_days_names = [days_map.get(day, day) for day in selected_days]
 
@@ -98,7 +97,6 @@ async def reminder_days_selected(callback: CallbackQuery, state: FSMContext):
     else:
         text = "Выберите дни недели для напоминаний:"
 
-    # Создаем обновленную клавиатуру
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     builder = InlineKeyboardBuilder()
 
@@ -130,5 +128,22 @@ async def reminder_days_selected(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         text,
         reply_markup=builder.as_markup()
+    )
+    await callback.answer()
+
+
+@router.callback_query(AddReminder.selecting_days, F.data == "reminder_days_done")
+async def reminder_days_done(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    selected_days = data.get('selected_days', [])
+
+    if not selected_days:
+        await callback.answer("Выберите хотя бы один день")
+        return
+
+    await state.set_state(AddReminder.entering_time)
+    await callback.message.edit_text(
+        "Введите время напоминания в формате ЧЧ:MM (например, 09:00):",
+        reply_markup=back_button()
     )
     await callback.answer()
