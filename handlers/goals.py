@@ -14,3 +14,12 @@ from keyboards import (
 )
 from service import GoalService, UserService
 from models import Goal
+
+router = Router()
+
+class AddGoal(StatesGroup):
+    entering_description = State()
+    selecting_type = State()
+    entering_target = State()
+    selecting_period = State()
+    confirmation = State()
