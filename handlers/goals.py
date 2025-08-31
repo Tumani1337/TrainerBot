@@ -23,3 +23,11 @@ class AddGoal(StatesGroup):
     entering_target = State()
     selecting_period = State()
     confirmation = State()
+
+@router.message(F.text.in_(("🎯 Мои цели", "/set_goal", "/view_goals")))
+@router.message(Command("set_goal", "view_goals"))
+async def goals_menu(message: Message):
+    await message.answer(
+        "Управление целями:",
+        reply_markup=goals_management()
+    )
