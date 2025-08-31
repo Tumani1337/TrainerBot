@@ -21,3 +21,11 @@ class AddReminder(StatesGroup):
     selecting_days = State()
     entering_time = State()
     confirmation = State()
+
+@router.message(F.text.in_(("⏰ Напоминания", "/reminder")))
+@router.message(Command("reminder"))
+async def reminders_menu(message: Message):
+    await message.answer(
+        "Управление напоминаниями:",
+        reply_markup=reminders_management()
+    )
