@@ -179,3 +179,34 @@ async def reminder_time_entered(message: Message, state: FSMContext):
         reminder_info,
         reply_markup=confirm_cancel()
     )
+
+
+@router.message(AddReminder.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
+async def reminder_confirmation(message: Message, state: FSMContext,
+                                reminder_service: ReminderService, user_service: UserService):
+    if message.text == "❌ Отменить":
+        await state.clear()
+        await message.answer("Создание напоминания отменено", reply_markup=main_menu())
+        return
+
+    data = await state.get_data()
+    user = await user_service.get_user(message.from_user.id)
+
+    try:
+        reminder = await reminder_service.add_reminder(
+            user_id=user.id,
+            days_of_week=data['selected_days'],
+            time=data['time']
+        )
+
+        await message.answer(
+            "✅ Напоминание успешно установлено!",
+            reply_markup=main_menu()
+        )
+    except Exception as e:
+        await message.answer(
+            f"Ошибка при создании напоминания: {e}",
+            reply_markup=main_menu()
+        )
+    finally:
+        await state.clear()
