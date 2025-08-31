@@ -106,7 +106,6 @@ async def goal_type_selected(message: Message, state: FSMContext):
     data = await state.get_data()
     description = data['description']
 
-    # Автоматическое определение единиц измерения из описания
     if any(word in description.lower() for word in ['км', 'километр', 'дистанц']):
         unit = "км"
     elif any(word in description.lower() for word in ['мин', 'время', 'длительн']):
@@ -117,5 +116,28 @@ async def goal_type_selected(message: Message, state: FSMContext):
     await state.update_data(unit=unit)
     await message.answer(
         f"Введите целевое значение (в {unit}):",
+        reply_markup=back_button()
+    )
+
+
+@router.message(AddGoal.entering_target)
+async def goal_target_entered(message: Message, state: FSMContext):
+    try:
+        target_value = float(message.text.strip())
+        if target_value <= 0:
+            raise ValueError
+    except ValueError:
+        await message.answer("Пожалуйста, введите положительное число")
+        return
+
+    await state.update_data(target_value=target_value)
+    await state.set_state(AddGoal.selecting_period)
+
+    await message.answer(
+        "Выберите срок для цели:\n"
+        "1 - неделя\n"
+        "2 - месяц\n"
+        "3 - 3 месяца\n"
+        "4 - год",
         reply_markup=back_button()
     )
