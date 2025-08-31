@@ -147,3 +147,35 @@ async def reminder_days_done(callback: CallbackQuery, state: FSMContext):
         reply_markup=back_button()
     )
     await callback.answer()
+
+
+@router.message(AddReminder.entering_time)
+async def reminder_time_entered(message: Message, state: FSMContext):
+    time_str = message.text.strip()
+
+    try:
+        datetime.strptime(time_str, "%H:%M")
+    except ValueError:
+        await message.answer("Неверный формат времени. Используйте ЧЧ:MM (например, 09:00)")
+        return
+
+    await state.update_data(time=time_str)
+    await state.set_state(AddReminder.confirmation)
+
+    data = await state.get_data()
+    selected_days = data['selected_days']
+
+    days_map = {"1": "Пн", "2": "Вт", "3": "Ср", "4": "Чт", "5": "Пт", "6": "Сб", "7": "Вс"}
+    selected_days_names = [days_map.get(day, day) for day in selected_days]
+
+    reminder_info = (
+        "Проверьте данные напоминания:\n\n"
+        f"Дни: {', '.join(selected_days_names)}\n"
+        f"Время: {time_str}\n\n"
+        "Всё верно?"
+    )
+
+    await message.answer(
+        reminder_info,
+        reply_markup=confirm_cancel()
+    )
