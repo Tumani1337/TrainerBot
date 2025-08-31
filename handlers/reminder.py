@@ -14,3 +14,10 @@ from keyboards import (
 )
 from service import ReminderService, UserService
 from models import Reminder
+
+router = Router()
+
+class AddReminder(StatesGroup):
+    selecting_days = State()
+    entering_time = State()
+    confirmation = State()
