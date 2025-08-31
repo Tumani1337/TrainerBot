@@ -40,3 +40,36 @@ async def new_goal_start(callback: CallbackQuery, state: FSMContext):
         reply_markup=back_button()
     )
     await callback.answer()
+
+
+@router.callback_query(F.data == "list_goals")
+async def list_goals(callback: CallbackQuery, goal_service: GoalService, user_service: UserService):
+    user = await user_service.get_user(callback.from_user.id)
+    goals = await goal_service.get_user_goals(user.id, telegram_id=callback.from_user.id)
+
+    if not goals:
+        await callback.message.edit_text(
+            "У вас пока нет целей. Создайте первую цель!",
+            reply_markup=goals_management()
+        )
+        return
+
+    goals_text = ""
+    for goal in goals:
+        progress_percent = (goal.current_value / goal.target_value * 100) if goal.target_value > 0 else 0
+        status = "✅" if goal.is_completed else "⏳"
+        goals_text += (
+            f"{status} {goal.description}\n"
+            f"Прогресс: {goal.current_value:.1f}/{goal.target_value:.1f} "
+            f"({progress_percent:.0f}%)\n"
+            f"Срок: {goal.target_date.strftime('%d.%m.%Y')}\n"
+        )
+        if goal.workout_type:
+            goals_text += f"Тип: {goal.workout_type}\n"
+        goals_text += "\n"
+
+    await callback.message.edit_text(
+        f"Ваши цели:\n\n{goals_text}",
+        reply_markup=goals_management()
+    )
+    await callback.answer()
