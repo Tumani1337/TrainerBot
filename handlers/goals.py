@@ -141,3 +141,44 @@ async def goal_target_entered(message: Message, state: FSMContext):
         "4 - год",
         reply_markup=back_button()
     )
+
+
+@router.message(AddGoal.selecting_period)
+async def goal_period_selected(message: Message, state: FSMContext):
+    period_choice = message.text.strip()
+    today = datetime.now()
+
+    if period_choice == "1":
+        target_date = today + timedelta(weeks=1)
+        period_text = "неделю"
+    elif period_choice == "2":
+        target_date = today + timedelta(days=30)
+        period_text = "месяц"
+    elif period_choice == "3":
+        target_date = today + timedelta(days=90)
+        period_text = "3 месяца"
+    elif period_choice == "4":
+        target_date = today + timedelta(days=365)
+        period_text = "год"
+    else:
+        await message.answer("Пожалуйста, выберите вариант из предложенных (1-4)")
+        return
+
+    await state.update_data(target_date=target_date, period_text=period_text)
+    await state.set_state(AddGoal.confirmation)
+
+    data = await state.get_data()
+
+    goal_info = (
+        "Проверьте данные цели:\n\n"
+        f"Описание: {data['description']}\n"
+        f"Тип активности: {data.get('workout_type', 'любая')}\n"
+        f"Целевое значение: {data['target_value']} {data['unit']}\n"
+        f"Срок: {period_text} (до {target_date.strftime('%d.%m.%Y')})\n\n"
+        "Всё верно?"
+    )
+
+    await message.answer(
+        goal_info,
+        reply_markup=confirm_cancel()
+    )
