@@ -210,3 +210,30 @@ async def reminder_confirmation(message: Message, state: FSMContext,
         )
     finally:
         await state.clear()
+
+
+@router.message(Command("toggle_reminder"))
+async def toggle_reminder(message: Message, reminder_service: ReminderService, user_service: UserService):
+    try:
+        reminder_id = int(message.text.split()[1])
+        user = await user_service.get_user(message.from_user.id)
+
+        reminders = await reminder_service.get_user_reminders(user.id)
+        reminder = next((r for r in reminders if r.id == reminder_id), None)
+
+        if not reminder:
+            await message.answer("Напоминание с таким ID не найдено")
+            return
+
+        new_status = not reminder.is_active
+        await reminder_service.toggle_reminder(reminder_id, new_status)
+
+        await message.answer(
+            f"Напоминание {'включено' if new_status else 'выключено'}!",
+            reply_markup=main_menu()
+        )
+
+    except (IndexError, ValueError):
+        await message.answer("Используйте: /toggle_reminder <ID_напоминания>")
+    except Exception as e:
+        await message.answer(f"Ошибка: {e}")
