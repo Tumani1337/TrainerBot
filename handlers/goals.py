@@ -245,3 +245,16 @@ async def view_progress(message: Message, goal_service: GoalService, user_servic
     progress_text += f"Выполнено целей: {completed}/{len(goals)}"
 
     await message.answer(progress_text)
+
+
+@router.callback_query(F.data == "back")
+async def back_to_goals_menu(callback: CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state:
+        await state.clear()
+
+    await callback.message.edit_text(
+        "Управление целями:",
+        reply_markup=goals_management()
+    )
+    await callback.answer()
