@@ -237,3 +237,28 @@ async def toggle_reminder(message: Message, reminder_service: ReminderService, u
         await message.answer("Используйте: /toggle_reminder <ID_напоминания>")
     except Exception as e:
         await message.answer(f"Ошибка: {e}")
+
+
+@router.callback_query(F.data == "back_to_reminders")
+async def back_to_reminders_menu(callback: CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state:
+        await state.clear()
+
+    await callback.message.edit_text(
+        "Управление напоминаниями:",
+        reply_markup=reminders_management()
+    )
+    await callback.answer()
+
+@router.callback_query(F.data == "back")
+async def back_to_main_menu(callback: CallbackQuery, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state:
+        await state.clear()
+
+    await callback.message.edit_text(
+        "Главное меню:",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
