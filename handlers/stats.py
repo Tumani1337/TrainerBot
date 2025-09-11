@@ -102,3 +102,11 @@ async def export_data(message: Message, workout_service: WorkoutService, user_se
         "Формат CSV:\n"
         f"{csv_data[:500]}..." if len(csv_data) > 500 else csv_data
     )
+
+@router.callback_query(F.data == "back")
+async def back_handler(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "Главное меню",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
