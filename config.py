@@ -1,6 +1,6 @@
 from pathlib import Path
 
-BOT_TOKEN = "7663850412:AAHsUw7DyfH-nBw1Z3hTlkNWttiG219P1ik"
+BOT_TOKEN = ""
 
 DB_PATH = Path("database.db")
 
