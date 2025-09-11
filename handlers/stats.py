@@ -75,3 +75,30 @@ async def compare_stats(message: Message, stats_service: StatsService, user_serv
 
     except Exception as e:
         await message.answer(f"Ошибка при сравнении статистики: {e}")
+
+
+@router.message(Command("export_data"))
+async def export_data(message: Message, workout_service: WorkoutService, user_service: UserService):
+    user = await user_service.get_user(message.from_user.id)
+    workouts = await workout_service.get_workouts(user.id)
+
+    if not workouts:
+        await message.answer("У вас пока нет тренировок для экспорта")
+        return
+
+    csv_data = "Дата,Тип,Длительность (мин),Дистанция (км),Калории,Заметки\n"
+    for workout in workouts:
+        csv_data += (
+            f"{workout.date.strftime('%Y-%m-%d')},"
+            f"{workout.workout_type},"
+            f"{workout.duration or ''},"
+            f"{workout.distance or ''},"
+            f"{workout.calories or ''},"
+            f"\"{workout.notes or ''}\"\n"
+        )
+
+    await message.answer(
+        f"Данные для экспорта ({len(workouts)} тренировок):\n\n"
+        "Формат CSV:\n"
+        f"{csv_data[:500]}..." if len(csv_data) > 500 else csv_data
+    )
