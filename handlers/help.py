@@ -4,10 +4,10 @@ from aiogram.types import Message
 
 from keyboards import main_menu
 
-router = Router()
+help_router = Router()
 
 
-@router.message(Command("help"))
+@help_router.message(Command("help"))
 async def cmd_help(message: Message):
     help_text = (
         "🤖 FitnessTrackerBot - Помощь\n\n"
