@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
 
@@ -6,7 +6,7 @@ from keyboards import main_menu
 
 help_router = Router()
 
-
+@help_router.message(F.text.in_(("ℹ️ Помощь")))
 @help_router.message(Command("help"))
 async def cmd_help(message: Message):
     help_text = (

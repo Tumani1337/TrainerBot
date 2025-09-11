@@ -11,7 +11,7 @@ from keyboards import (
     confirm_cancel,
     back_button, main_menu
 )
-from service import WorkoutService, UserService
+from service import WorkoutService, UserService, GoalService
 from models import Workout
 from datetime import datetime
 import re
@@ -167,7 +167,8 @@ async def workout_notes_entered(message: Message, state: FSMContext):
 @workouts_router.message(AddWorkout.confirmation, F.text.in_(("✅ Подтвердить", "❌ Отменить")))
 async def workout_confirmation(message: Message, state: FSMContext,
                                workout_service: WorkoutService,
-                               user_service: UserService):
+                               user_service: UserService,
+                               goal_service: GoalService):
     if message.text == "❌ Отменить":
         await state.clear()
         await message.answer("Добавление тренировки отменено", reply_markup=main_menu())
@@ -185,7 +186,6 @@ async def workout_confirmation(message: Message, state: FSMContext,
             distance=data.get('distance'),
             calories=data.get('calories'),
             notes=data.get('notes'),
-            telegram_id=message.from_user.id
         )
 
         await message.answer(

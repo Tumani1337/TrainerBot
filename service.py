@@ -100,7 +100,8 @@ class GoalService:
             user_id, description, target_value, target_date, workout_type
         )
 
-    async def get_user_goals(self, user_id: int, include_completed: bool = False) -> List[Goal]:
+    async def get_user_goals(self, user_id: int, include_completed: bool = False,
+                             telegram_id: Optional[int] = None) -> List[Goal]:
         goals = await self.goal_repo.get_user_goals(user_id, include_completed)
 
         for goal in goals:

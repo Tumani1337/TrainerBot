@@ -7,7 +7,13 @@ from config import BOT_TOKEN, DB_PATH
 from repo import UserRepo, WorkoutRepo, GoalRepo, ReminderRepo
 from service import UserService, WorkoutService, GoalService, ReminderService, StatsService
 from keyboards import main_menu
-from handlers.__init__ import main_router
+
+from handlers.start import start_router
+from handlers.workouts import workouts_router
+from handlers.goals import goals_router
+from handlers.reminder import reminder_router
+from handlers.stats import stats_router
+from handlers.help import help_router
 
 
 async def main():
@@ -21,10 +27,10 @@ async def main():
     reminder_repo = ReminderRepo(DB_PATH)
 
     user_service = UserService(user_repo)
-    goal_service = GoalService(goal_repo, bot)
+    goal_service = GoalService(goal_repo)
     workout_service = WorkoutService(workout_repo, goal_repo)
     reminder_service = ReminderService(reminder_repo)
-    stats_service = StatsService(workout_repo)
+    stats_service = StatsService(workout_repo,reminder_repo)
 
     await user_repo.create_table()
     await workout_repo.create_table()
@@ -38,7 +44,8 @@ async def main():
         reminder_service=reminder_service,
         stats_service=stats_service)
 
-    dp.include_router(main_router)
+    dp.include_routers(start_router,help_router,workouts_router,goals_router,
+                       reminder_router,stats_router)
 
     print("Бот запущен!")
     try:
