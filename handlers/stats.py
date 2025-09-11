@@ -47,3 +47,31 @@ async def stats_period_selected(callback: CallbackQuery,
     )
     await callback.answer()
 
+
+@router.message(Command("compare"))
+async def compare_stats(message: Message, stats_service: StatsService, user_service: UserService):
+    user = await user_service.get_user(message.from_user.id)
+
+    try:
+        comparison = await stats_service.compare_periods(user.id, "week")
+
+        diff = comparison['difference']
+        diff_text = ""
+
+        for metric, value in diff.items():
+            if value > 0:
+                diff_text += f"📈 {metric}: +{value}\n"
+            elif value < 0:
+                diff_text += f"📉 {metric}: {value}\n"
+            else:
+                diff_text += f"➡️ {metric}: без изменений\n"
+
+        response = (
+            "Сравнение текущей недели с предыдущей:\n\n"
+            f"{diff_text}"
+        )
+
+        await message.answer(response)
+
+    except Exception as e:
+        await message.answer(f"Ошибка при сравнении статистики: {e}")
