@@ -10,10 +10,10 @@ from keyboards import (
 )
 from service import WorkoutService, UserService, StatsService
 
-router = Router()
+stats_router = Router()
 
-@router.message(F.text.in_(("📊 Статистика", "/statistics")))
-@router.message(Command("statistics"))
+@stats_router.message(F.text.in_(("📊 Статистика", "/statistics")))
+@stats_router.message(Command("statistics"))
 async def statistics_menu(message: Message):
     await message.answer(
         "Выберите период для статистики:",
@@ -21,7 +21,7 @@ async def statistics_menu(message: Message):
     )
 
 
-@router.callback_query(F.data.startswith("period_"))
+@stats_router.callback_query(F.data.startswith("period_"))
 async def stats_period_selected(callback: CallbackQuery,
                                 workout_service: WorkoutService,
                                 user_service: UserService):
@@ -48,7 +48,7 @@ async def stats_period_selected(callback: CallbackQuery,
     await callback.answer()
 
 
-@router.message(Command("compare"))
+@stats_router.message(Command("compare"))
 async def compare_stats(message: Message, stats_service: StatsService, user_service: UserService):
     user = await user_service.get_user(message.from_user.id)
 
@@ -77,7 +77,7 @@ async def compare_stats(message: Message, stats_service: StatsService, user_serv
         await message.answer(f"Ошибка при сравнении статистики: {e}")
 
 
-@router.message(Command("export_data"))
+@stats_router.message(Command("export_data"))
 async def export_data(message: Message, workout_service: WorkoutService, user_service: UserService):
     user = await user_service.get_user(message.from_user.id)
     workouts = await workout_service.get_workouts(user.id)
@@ -103,7 +103,7 @@ async def export_data(message: Message, workout_service: WorkoutService, user_se
         f"{csv_data[:500]}..." if len(csv_data) > 500 else csv_data
     )
 
-@router.callback_query(F.data == "back")
+@stats_router.callback_query(F.data == "back")
 async def back_handler(callback: CallbackQuery):
     await callback.message.edit_text(
         "Главное меню",
