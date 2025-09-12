@@ -46,7 +46,7 @@ async def list_reminders(callback: CallbackQuery, reminder_service: ReminderServ
     reminders = await reminder_service.get_user_reminders(user.id)
 
     if not reminders:
-        await callback.message.edit_text(
+        await callback.message.answer(
             "У вас пока нет напоминаний.",
             reply_markup=reminders_management()
         )

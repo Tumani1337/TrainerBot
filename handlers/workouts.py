@@ -234,7 +234,7 @@ async def period_selected(callback: CallbackQuery,
 
 @workouts_router.callback_query(F.data == "back")
 async def back_handler(callback: CallbackQuery):
-    await callback.message.edit_text(
+    await callback.message.answer(
         "Главное меню",
         reply_markup=main_menu()
     )

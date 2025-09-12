@@ -49,7 +49,7 @@ async def list_goals(callback: CallbackQuery, goal_service: GoalService, user_se
     goals = await goal_service.get_user_goals(user.id, telegram_id=callback.from_user.id)
 
     if not goals:
-        await callback.message.edit_text(
+        await callback.message.answer(
             "У вас пока нет целей. Создайте первую цель!",
             reply_markup=goals_management()
         )
@@ -69,7 +69,7 @@ async def list_goals(callback: CallbackQuery, goal_service: GoalService, user_se
             goals_text += f"Тип: {goal.workout_type}\n"
         goals_text += "\n"
 
-    await callback.message.edit_text(
+    await callback.message.answer(
         f"Ваши цели:\n\n{goals_text}",
         reply_markup=goals_management()
     )

@@ -41,7 +41,7 @@ async def stats_period_selected(callback: CallbackQuery,
         f"Средние калории: {stats['avg_calories']:.0f}/тренировка"
     )
 
-    await callback.message.edit_text(
+    await callback.message.answer(
         stats_text,
         reply_markup=back_button()
     )
